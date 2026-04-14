@@ -202,16 +202,24 @@ function createPlane() {
 
   document.body.appendChild(plane);
 
-  const i = uInput.getBoundingClientRect();
+  const rect = uInput.getBoundingClientRect();
 
-  plane.style.left = i.left + i.width/2 + "px";
-  plane.style.top = i.top + "px";
+  // Start position (center of input)
+  const startX = rect.left + rect.width / 2;
+  const startY = rect.top + rect.height / 2;
 
+  plane.style.left = startX + "px";
+  plane.style.top = startY + "px";
+
+  // Target = exact screen center
   const centerX = window.innerWidth / 2;
   const centerY = window.innerHeight / 2;
 
-  plane.style.setProperty("--dx", (centerX - i.left) + "px");
-  plane.style.setProperty("--dy", (centerY - i.top) + "px");
+  const dx = centerX - startX;
+  const dy = centerY - startY;
+
+  plane.style.setProperty("--dx", dx + "px");
+  plane.style.setProperty("--dy", dy + "px");
 
   setTimeout(() => plane.remove(), 1500);
 }
