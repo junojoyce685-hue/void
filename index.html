@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>void</title>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+  body { margin: 0; overflow: hidden; font-family: sans-serif; }
+
+  /* BLACKHOLE */
+  .blackhole {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #000 40%, #111 60%, transparent 70%);
+    box-shadow: 0 0 80px rgba(255,255,255,0.08);
+    animation: pulse 3s infinite ease-in-out;
+  }
+
+  @keyframes pulse {
+    0%,100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+
+  /* VOID TEXT */
+  .vent-text {
+    position: absolute;
+    color: white;
+    pointer-events: none;
+    font-size: 16px;
+    animation: spiral 1.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  }
+
+  @keyframes spiral {
+    0% { opacity:1; transform: translate(0,0) scale(1) rotate(0deg); }
+    100% {
+      opacity:0;
+      transform: translate(var(--dx), var(--dy)) scale(0) rotate(720deg);
+      filter: blur(4px);
+    }
+  }
+
+  /* UNIVERSE */
+  .stars {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: black;
+  }
+
+  .stars::after {
+    content: "";
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: white;
+    box-shadow:
+      100px 200px white, 300px 400px white, 500px 100px white,
+      700px 300px white, 900px 200px white, 200px 600px white,
+      400px 800px white, 800px 700px white;
+    animation: drift 20s linear infinite;
+  }
+
+  @keyframes drift {
+    from { transform: translateY(0); }
+    to { transform: translateY(-1000px); }
+  }
+
+  /* PAPER INPUT */
+  .paper {
+    background: #fdfdfd;
+    color: black;
+    border-radius: 4px;
+    box-shadow: 0 4px 20px rgba(255,255,255,0.1);
+  }
+
+  /* PAPER PLANE */
+  .plane {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: white;
+    clip-path: polygon(0 0, 100% 50%, 0 100%, 20% 50%);
+    animation: fly 1.5s ease-in forwards;
+  }
+
+  @keyframes fly {
+    0% {
+      transform: translate(0,0) scale(1) rotate(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translate(var(--dx), var(--dy)) scale(0.5) rotate(45deg);
+      opacity: 0;
+    }
+  }
+</style>
+</head>
+
+<body class="text-white">
+
+<button onclick="toggleMode()" class="absolute top-4 right-4 z-50 px-4 py-1 border rounded">
+  switch
+</button>
+
+<!-- VOID -->
+<div id="void" class="w-screen h-screen bg-black flex flex-col items-center justify-center">
+  <div id="blackhole" class="blackhole mb-10"></div>
+
+  <textarea id="voidInput"
+    class="bg-transparent border border-gray-700 p-3 w-80 text-center"
+    placeholder="..."></textarea>
+
+  <p class="absolute bottom-6 text-sm text-gray-500 text-center px-4">
+    write down what's bothering you and let it vanish into the void
+  </p>
+</div>
+
+<!-- UNIVERSE -->
+<div id="universe" class="hidden w-screen h-screen flex flex-col items-center justify-center">
+  <div class="stars"></div>
+
+  <textarea id="universeInput"
+    class="paper p-3 w-80 text-center z-10"
+    placeholder="..."></textarea>
+
+  <p class="absolute bottom-6 text-sm text-gray-400 text-center px-4 z-10">
+    write down what you want from the universe and let your energy flow
+  </p>
+</div>
+
+<script>
+let mode = "void";
+
+function toggleMode() {
+  const v = document.getElementById("void");
+  const u = document.getElementById("universe");
+
+  if (mode === "void") {
+    v.classList.add("hidden");
+    u.classList.remove("hidden");
+    mode = "universe";
+  } else {
+    u.classList.add("hidden");
+    v.classList.remove("hidden");
+    mode = "void";
+  }
+}
+
+/* VOID EFFECT */
+const input = document.getElementById("voidInput");
+const hole = document.getElementById("blackhole");
+
+input.addEventListener("keydown", function(e) {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    const text = input.value.trim();
+    if (!text) return;
+    createVent(text);
+    input.value = "";
+  }
+});
+
+function createVent(text) {
+  const el = document.createElement("div");
+  el.className = "vent-text";
+  el.innerText = text;
+
+  document.body.appendChild(el);
+
+  const i = input.getBoundingClientRect();
+  const h = hole.getBoundingClientRect();
+
+  el.style.left = i.left + "px";
+  el.style.top = i.top + "px";
+
+  el.style.setProperty("--dx", (h.left - i.left + h.width/2) + "px");
+  el.style.setProperty("--dy", (h.top - i.top + h.height/2) + "px");
+
+  setTimeout(() => el.remove(), 1600);
+}
+
+/* UNIVERSE PLANE EFFECT */
+const uInput = document.getElementById("universeInput");
+
+uInput.addEventListener("keydown", function(e) {
+  if (e.key === "Enter") {
+    e.preventDefault();
+
+    const text = uInput.value.trim();
+    if (!text) return;
+
+    createPlane();
+    uInput.value = "";
+  }
+});
+
+function createPlane() {
+  const plane = document.createElement("div");
+  plane.className = "plane";
+
+  document.body.appendChild(plane);
+
+  const i = uInput.getBoundingClientRect();
+
+  plane.style.left = i.left + i.width/2 + "px";
+  plane.style.top = i.top + "px";
+
+  const centerX = window.innerWidth / 2;
+  const centerY = window.innerHeight / 2;
+
+  plane.style.setProperty("--dx", (centerX - i.left) + "px");
+  plane.style.setProperty("--dy", (centerY - i.top) + "px");
+
+  setTimeout(() => plane.remove(), 1500);
+}
+</script>
+
+</body>
+</html>
