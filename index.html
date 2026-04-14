@@ -77,24 +77,49 @@
 
   /* PAPER PLANE */
   .plane {
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    background: white;
-    clip-path: polygon(0 0, 100% 50%, 0 100%, 20% 50%);
-    animation: fly 1.5s ease-in forwards;
+  position: fixed;
+  width: 120px;
+  height: 60px;
+  background: #fdfdfd;
+  z-index: 9999;
+  border-radius: 4px;
+  transform-origin: center;
+  animation: foldAndFly 1.8s ease-in-out forwards;
+}
+
+/* FOLD + MORPH + FLY */
+@keyframes foldAndFly {
+
+  /* Start as paper */
+  0% {
+    opacity: 1;
+    transform: translate(0,0) scale(1) rotate(0deg) skew(0deg);
+    clip-path: inset(0% 0% 0% 0%);
   }
 
-  @keyframes fly {
-    0% {
-      transform: translate(0,0) scale(1) rotate(0deg);
-      opacity: 1;
-    }
-    100% {
-      transform: translate(var(--dx), var(--dy)) scale(0.5) rotate(45deg);
-      opacity: 0;
-    }
+  /* First fold */
+  25% {
+    transform: translate(0,0) scale(0.9) rotate(0deg) skewX(-20deg);
   }
+
+  /* Second fold */
+  45% {
+    transform: translate(0,0) scale(0.7) rotate(0deg) skewX(20deg);
+  }
+
+  /* Morph into plane */
+  60% {
+    clip-path: polygon(0 0, 100% 50%, 0 100%, 20% 50%);
+    transform: scale(0.5) rotate(10deg);
+  }
+
+  /* Fly */
+  100% {
+    clip-path: polygon(0 0, 100% 50%, 0 100%, 20% 50%);
+    transform: translate(var(--dx), var(--dy)) scale(0.4) rotate(45deg);
+    opacity: 0;
+  }
+}
 </style>
 </head>
 
@@ -199,29 +224,26 @@ uInput.addEventListener("keydown", function(e) {
 function createPlane() {
   const plane = document.createElement("div");
   plane.className = "plane";
-
   document.body.appendChild(plane);
 
   const rect = uInput.getBoundingClientRect();
 
-  // Start position (center of input)
-  const startX = rect.left + rect.width / 2;
-  const startY = rect.top + rect.height / 2;
+  // Match paper size + position
+  plane.style.left = rect.left + "px";
+  plane.style.top = rect.top + "px";
+  plane.style.width = rect.width + "px";
+  plane.style.height = rect.height + "px";
 
-  plane.style.left = startX + "px";
-  plane.style.top = startY + "px";
-
-  // Target = exact screen center
   const centerX = window.innerWidth / 2;
   const centerY = window.innerHeight / 2;
 
-  const dx = centerX - startX;
-  const dy = centerY - startY;
+  const dx = centerX - rect.left;
+  const dy = centerY - rect.top;
 
   plane.style.setProperty("--dx", dx + "px");
   plane.style.setProperty("--dy", dy + "px");
 
-  setTimeout(() => plane.remove(), 1500);
+  setTimeout(() => plane.remove(), 1800);
 }
 </script>
 
