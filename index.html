@@ -43,10 +43,11 @@
 
   /* UNIVERSE */
   .stars {
-    position: absolute;
+    position: fixed;
     width: 100%;
     height: 100%;
     background: black;
+    z-index: 0;
   }
 
   .stars::after {
@@ -75,51 +76,51 @@
     box-shadow: 0 4px 20px rgba(255,255,255,0.1);
   }
 
-  /* PAPER PLANE */
+  /* PLANE BASE */
   .plane {
-  position: fixed;
-  width: 120px;
-  height: 60px;
-  background: #fdfdfd;
-  z-index: 9999;
-  border-radius: 4px;
-  transform-origin: center;
-  animation: foldAndFly 1.8s ease-in-out forwards;
-}
-
-/* FOLD + MORPH + FLY */
-@keyframes foldAndFly {
-
-  /* Start as paper */
-  0% {
-    opacity: 1;
-    transform: translate(0,0) scale(1) rotate(0deg) skew(0deg);
-    clip-path: inset(0% 0% 0% 0%);
+    position: fixed;
+    background: #fdfdfd;
+    z-index: 9999;
+    border-radius: 4px;
+    transform-origin: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
   }
 
-  /* First fold */
-  25% {
-    transform: translate(0,0) scale(0.9) rotate(0deg) skewX(-20deg);
+  /* TRIGGERED ANIMATION */
+  .plane.animate {
+    animation: foldAndFly 1.8s ease-in-out forwards;
   }
 
-  /* Second fold */
-  45% {
-    transform: translate(0,0) scale(0.7) rotate(0deg) skewX(20deg);
+  @keyframes foldAndFly {
+    0% {
+      opacity: 1;
+      transform: scale(1) skewX(0deg);
+      clip-path: inset(0% 0% 0% 0%);
+    }
+
+    25% {
+      transform: scale(0.9) skewX(-15deg);
+    }
+
+    45% {
+      transform: scale(0.7) skewX(15deg);
+    }
+
+    60% {
+      clip-path: polygon(0 0, 100% 50%, 0 100%, 20% 50%);
+      transform: scale(0.5) rotate(10deg);
+    }
+
+    100% {
+      clip-path: polygon(0 0, 100% 50%, 0 100%, 20% 50%);
+      transform: translate(var(--dx), var(--dy)) scale(0.4) rotate(45deg);
+      opacity: 0;
+    }
   }
 
-  /* Morph into plane */
-  60% {
-    clip-path: polygon(0 0, 100% 50%, 0 100%, 20% 50%);
-    transform: scale(0.5) rotate(10deg);
+  textarea {
+    transition: opacity 0.2s ease;
   }
-
-  /* Fly */
-  100% {
-    clip-path: polygon(0 0, 100% 50%, 0 100%, 20% 50%);
-    transform: translate(var(--dx), var(--dy)) scale(0.4) rotate(45deg);
-    opacity: 0;
-  }
-}
 </style>
 </head>
 
@@ -147,7 +148,7 @@
   <div class="stars"></div>
 
   <textarea id="universeInput"
-    class="paper p-3 w-80 text-center z-10"
+    class="paper p-3 w-80 text-center z-10 relative"
     placeholder="..."></textarea>
 
   <p class="absolute bottom-6 text-sm text-gray-400 text-center px-4 z-10">
@@ -173,7 +174,7 @@ function toggleMode() {
   }
 }
 
-/* VOID EFFECT */
+/* VOID */
 const input = document.getElementById("voidInput");
 const hole = document.getElementById("blackhole");
 
@@ -206,7 +207,7 @@ function createVent(text) {
   setTimeout(() => el.remove(), 1600);
 }
 
-/* UNIVERSE PLANE EFFECT */
+/* UNIVERSE */
 const uInput = document.getElementById("universeInput");
 
 uInput.addEventListener("keydown", function(e) {
@@ -217,22 +218,30 @@ uInput.addEventListener("keydown", function(e) {
     if (!text) return;
 
     createPlane();
+
+    // hide input
+    uInput.style.opacity = "0";
+
     uInput.value = "";
+
+    setTimeout(() => {
+      uInput.style.opacity = "1";
+    }, 1800);
   }
 });
 
 function createPlane() {
-  const plane = document.createElement("div");
-  plane.className = "plane";
-  document.body.appendChild(plane);
-
   const rect = uInput.getBoundingClientRect();
 
-  // Match paper size + position
+  const plane = document.createElement("div");
+  plane.className = "plane";
+
   plane.style.left = rect.left + "px";
   plane.style.top = rect.top + "px";
   plane.style.width = rect.width + "px";
   plane.style.height = rect.height + "px";
+
+  document.body.appendChild(plane);
 
   const centerX = window.innerWidth / 2;
   const centerY = window.innerHeight / 2;
@@ -242,6 +251,11 @@ function createPlane() {
 
   plane.style.setProperty("--dx", dx + "px");
   plane.style.setProperty("--dy", dy + "px");
+
+  // critical fix
+  requestAnimationFrame(() => {
+    plane.classList.add("animate");
+  });
 
   setTimeout(() => plane.remove(), 1800);
 }
