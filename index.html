@@ -3,157 +3,75 @@
 <head>
 <meta charset="UTF-8">
 <title>void</title>
-<script src="https://cdn.tailwindcss.com"></script>
-
 <style>
-  body { margin: 0; overflow: hidden; font-family: sans-serif; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { overflow: hidden; font-family: sans-serif; width: 100vw; height: 100vh; background: #000; color: white; }
 
-  /* BLACKHOLE */
   .blackhole {
-    width: 200px;
-    height: 200px;
-    border-radius: 50%;
+    width: 200px; height: 200px; border-radius: 50%;
     background: radial-gradient(circle, #000 40%, #111 60%, transparent 70%);
     box-shadow: 0 0 80px rgba(255,255,255,0.08);
     animation: pulse 3s infinite ease-in-out;
   }
+  @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
 
-  @keyframes pulse {
-    0%,100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-  }
-
-  /* VOID TEXT */
   .vent-text {
-    position: absolute;
-    color: white;
-    pointer-events: none;
-    font-size: 16px;
-    animation: spiral 1.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    position: fixed; color: white; pointer-events: none; font-size: 16px;
+    animation: spiral 1.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; z-index: 100;
   }
-
   @keyframes spiral {
     0% { opacity:1; transform: translate(0,0) scale(1) rotate(0deg); }
-    100% {
-      opacity:0;
-      transform: translate(var(--dx), var(--dy)) scale(0) rotate(720deg);
-      filter: blur(4px);
-    }
+    100% { opacity:0; transform: translate(var(--dx), var(--dy)) scale(0) rotate(720deg); filter: blur(4px); }
   }
 
-  /* UNIVERSE */
-  .stars {
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    background: black;
-    z-index: 0;
-  }
+  #void { width: 100vw; height: 100vh; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  #universe { width: 100vw; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #000; }
+  .hidden { display: none !important; }
 
-  .stars::after {
-    content: "";
-    position: absolute;
-    width: 2px;
-    height: 2px;
-    background: white;
-    box-shadow:
-      100px 200px white, 300px 400px white, 500px 100px white,
-      700px 300px white, 900px 200px white, 200px 600px white,
-      400px 800px white, 800px 700px white;
-    animation: drift 20s linear infinite;
-  }
-
-  @keyframes drift {
-    from { transform: translateY(0); }
-    to { transform: translateY(-1000px); }
-  }
-
-  /* PAPER INPUT */
-  .paper {
-    background: #fdfdfd;
-    color: black;
-    border-radius: 4px;
-    box-shadow: 0 4px 20px rgba(255,255,255,0.1);
-  }
-
-  /* PLANE BASE */
-  .plane {
-    position: fixed;
-    background: #fdfdfd;
-    z-index: 9999;
-    border-radius: 4px;
-    transform-origin: center;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-  }
-
-  /* TRIGGERED ANIMATION */
-  .plane.animate {
-    animation: foldAndFly 1.8s ease-in-out forwards;
-  }
-
-  @keyframes foldAndFly {
-    0% {
-      opacity: 1;
-      transform: scale(1) skewX(0deg);
-      clip-path: inset(0% 0% 0% 0%);
-    }
-
-    25% {
-      transform: scale(0.9) skewX(-15deg);
-    }
-
-    45% {
-      transform: scale(0.7) skewX(15deg);
-    }
-
-    60% {
-      clip-path: polygon(0 0, 100% 50%, 0 100%, 20% 50%);
-      transform: scale(0.5) rotate(10deg);
-    }
-
-    100% {
-      clip-path: polygon(0 0, 100% 50%, 0 100%, 20% 50%);
-      transform: translate(var(--dx), var(--dy)) scale(0.4) rotate(45deg);
-      opacity: 0;
-    }
-  }
+  .star-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
 
   textarea {
-    transition: opacity 0.2s ease;
+    background: transparent; border: 1px solid #444; color: white; padding: 12px;
+    width: 320px; text-align: center; resize: none; border-radius: 4px; font-size: 16px;
+    outline: none; position: relative; z-index: 10;
+  }
+
+  .hint { position: fixed; bottom: 24px; font-size: 13px; color: #555; text-align: center; z-index: 10; padding: 0 20px; }
+
+  button#switchBtn {
+    position: fixed; top: 16px; right: 16px; z-index: 50;
+    padding: 4px 16px; border: 1px solid #888; background: transparent;
+    color: white; border-radius: 4px; cursor: pointer; font-size: 14px;
+  }
+
+  .plane-svg {
+    position: fixed; z-index: 9999; pointer-events: none;
+    transform-origin: center center;
+  }
+  .plane-svg.animate {
+    animation: flyAway 1.8s ease-in forwards;
+  }
+  @keyframes flyAway {
+    0%   { opacity: 1; transform: translate(0,0) scale(1) rotate(0deg); }
+    30%  { transform: translate(calc(var(--dx)*0.2), calc(var(--dy)*0.1)) scale(0.9) rotate(-10deg); }
+    100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.2) rotate(30deg); }
   }
 </style>
 </head>
+<body>
 
-<body class="text-white">
+<button id="switchBtn" onclick="toggleMode()">switch</button>
 
-<button onclick="toggleMode()" class="absolute top-4 right-4 z-50 px-4 py-1 border rounded">
-  switch
-</button>
-
-<!-- VOID -->
-<div id="void" class="w-screen h-screen bg-black flex flex-col items-center justify-center">
-  <div id="blackhole" class="blackhole mb-10"></div>
-
-  <textarea id="voidInput"
-    class="bg-transparent border border-gray-700 p-3 w-80 text-center"
-    placeholder="..."></textarea>
-
-  <p class="absolute bottom-6 text-sm text-gray-500 text-center px-4">
-    write down what's bothering you and let it vanish into the void
-  </p>
+<div id="void">
+  <div class="blackhole" id="blackhole" style="margin-bottom: 40px;"></div>
+  <textarea id="voidInput" rows="3" placeholder="..."></textarea>
+  <p class="hint">write what's bothering you and let it vanish into the void</p>
 </div>
 
-<!-- UNIVERSE -->
-<div id="universe" class="hidden w-screen h-screen flex flex-col items-center justify-center">
-  <div class="stars"></div>
-
-  <textarea id="universeInput"
-    class="paper p-3 w-80 text-center z-10 relative"
-    placeholder="..."></textarea>
-
-  <p class="absolute bottom-6 text-sm text-gray-400 text-center px-4 z-10">
-    write down what you want from the universe and let your energy flow
-  </p>
+<div id="universe" class="hidden">
+  <canvas class="star-canvas" id="starCanvas"></canvas>
+  <textarea id="universeInput" rows="3" placeholder="..."></textarea>
+  <p class="hint" style="color:#666;">write what you want from the universe and let your energy flow</p>
 </div>
 
 <script>
@@ -162,11 +80,11 @@ let mode = "void";
 function toggleMode() {
   const v = document.getElementById("void");
   const u = document.getElementById("universe");
-
   if (mode === "void") {
     v.classList.add("hidden");
     u.classList.remove("hidden");
     mode = "universe";
+    initStars();
   } else {
     u.classList.add("hidden");
     v.classList.remove("hidden");
@@ -174,17 +92,48 @@ function toggleMode() {
   }
 }
 
-/* VOID */
-const input = document.getElementById("voidInput");
+let starsInited = false;
+function initStars() {
+  if (starsInited) return;
+  starsInited = true;
+  const canvas = document.getElementById("starCanvas");
+  const ctx = canvas.getContext("2d");
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const stars = Array.from({length: 150}, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    r: Math.random() * 1.5 + 0.3,
+    speed: Math.random() * 0.3 + 0.05
+  }));
+
+  function draw() {
+    ctx.fillStyle = "#000";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    stars.forEach(s => {
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(255,255,255,0.85)";
+      ctx.fill();
+      s.y -= s.speed;
+      if (s.y < 0) { s.y = canvas.height; s.x = Math.random() * canvas.width; }
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+const vInput = document.getElementById("voidInput");
 const hole = document.getElementById("blackhole");
 
-input.addEventListener("keydown", function(e) {
+vInput.addEventListener("keydown", function(e) {
   if (e.key === "Enter") {
     e.preventDefault();
-    const text = input.value.trim();
+    const text = vInput.value.trim();
     if (!text) return;
     createVent(text);
-    input.value = "";
+    vInput.value = "";
   }
 });
 
@@ -192,74 +141,67 @@ function createVent(text) {
   const el = document.createElement("div");
   el.className = "vent-text";
   el.innerText = text;
-
   document.body.appendChild(el);
-
-  const i = input.getBoundingClientRect();
+  const i = vInput.getBoundingClientRect();
   const h = hole.getBoundingClientRect();
-
   el.style.left = i.left + "px";
   el.style.top = i.top + "px";
-
   el.style.setProperty("--dx", (h.left - i.left + h.width/2) + "px");
   el.style.setProperty("--dy", (h.top - i.top + h.height/2) + "px");
-
   setTimeout(() => el.remove(), 1600);
 }
 
-/* UNIVERSE */
 const uInput = document.getElementById("universeInput");
 
 uInput.addEventListener("keydown", function(e) {
   if (e.key === "Enter") {
     e.preventDefault();
-
     const text = uInput.value.trim();
     if (!text) return;
-
-    createPlane();
-
-    // hide input
-    uInput.style.opacity = "0";
-
+    launchPlane();
     uInput.value = "";
-
-    setTimeout(() => {
-      uInput.style.opacity = "1";
-    }, 1800);
   }
 });
 
-function createPlane() {
+function launchPlane() {
   const rect = uInput.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
 
-  const plane = document.createElement("div");
-  plane.className = "plane";
+  const svgNS = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(svgNS, "svg");
+  svg.setAttribute("width", "80");
+  svg.setAttribute("height", "60");
+  svg.setAttribute("viewBox", "0 0 80 60");
+  svg.classList.add("plane-svg");
+  svg.style.left = (cx - 40) + "px";
+  svg.style.top = (cy - 30) + "px";
 
-  plane.style.left = rect.left + "px";
-  plane.style.top = rect.top + "px";
-  plane.style.width = rect.width + "px";
-  plane.style.height = rect.height + "px";
+  const body = document.createElementNS(svgNS, "path");
+  body.setAttribute("d", "M0 30 L80 0 L55 30 L80 60 Z");
+  body.setAttribute("fill", "white");
+  body.setAttribute("stroke", "#ccc");
+  body.setAttribute("stroke-width", "1");
 
-  document.body.appendChild(plane);
+  const fold = document.createElementNS(svgNS, "path");
+  fold.setAttribute("d", "M0 30 L55 30 L80 60");
+  fold.setAttribute("fill", "#ddd");
+  fold.setAttribute("stroke", "#bbb");
+  fold.setAttribute("stroke-width", "0.5");
 
-  const centerX = window.innerWidth / 2;
-  const centerY = window.innerHeight / 2;
+  svg.appendChild(body);
+  svg.appendChild(fold);
+  document.body.appendChild(svg);
 
-  const dx = centerX - rect.left;
-  const dy = centerY - rect.top;
+  const dx = window.innerWidth * 0.5 - cx;
+  const dy = -cy - 80;
 
-  plane.style.setProperty("--dx", dx + "px");
-  plane.style.setProperty("--dy", dy + "px");
+  svg.style.setProperty("--dx", dx + "px");
+  svg.style.setProperty("--dy", dy + "px");
 
-  // critical fix
-  requestAnimationFrame(() => {
-    plane.classList.add("animate");
-  });
-
-  setTimeout(() => plane.remove(), 1800);
+  requestAnimationFrame(() => svg.classList.add("animate"));
+  setTimeout(() => svg.remove(), 1900);
 }
 </script>
-
 </body>
 </html>
